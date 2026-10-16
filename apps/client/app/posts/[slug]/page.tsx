@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { siteUrl } from '@/lib/site';
+import { ogImage, siteUrl } from '@/lib/site';
 import { getAdjacentPosts, getAllPosts, getPostBySlug, type PostBlock } from '@/lib/posts';
 
 type PostPageProps = {
@@ -39,7 +39,15 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       title: post.title,
       description: post.description,
       publishedTime: post.publishedAt,
-      tags: [post.category],
+      url: `${siteUrl}/posts/${post.slug}/`,
+      tags: [...post.tags],
+      images: [ogImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      images: [ogImage],
     },
   };
 }
@@ -146,7 +154,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {previous ? (
               <Link
                 className='article-pagination__link article-pagination__link--previous'
-                href={`/posts/${previous.slug}`}>
+                href={`/posts/${previous.slug}/`}>
                 <span className='article-pagination__label'>이전 글</span>
                 <strong>{previous.title}</strong>
               </Link>
@@ -155,7 +163,7 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
 
             {next ? (
-              <Link className='article-pagination__link article-pagination__link--next' href={`/posts/${next.slug}`}>
+              <Link className='article-pagination__link article-pagination__link--next' href={`/posts/${next.slug}/`}>
                 <span className='article-pagination__label'>다음 글</span>
                 <strong>{next.title}</strong>
               </Link>
