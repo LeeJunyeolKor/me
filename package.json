@@ -3,16 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "packageManager": "pnpm@11.1.1",
   "scripts": {
     "start": "pnpm --filter '@apps/*' start",
     "dev": "pnpm --filter '@apps/*' dev",
     "format": "prettier . --write",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "keywords": [],
   "author": "",
   "license": "ISC"

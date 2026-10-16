@@ -1,9 +1,9 @@
 # 블로그 실행과 배포
 
-Node.js 24, pnpm 11.1.1을 사용합니다.
+Node.js 24, pnpm 11.1.1을 사용합니다. 버전은 루트 `.nvmrc`와 `packageManager`에 있고, 의존성은 루트 `pnpm-lock.yaml` 하나로 설치합니다.
 
 ```sh
-pnpm --filter @apps/client install --frozen-lockfile
+pnpm install --frozen-lockfile
 pnpm --filter @apps/client run dev
 ```
 

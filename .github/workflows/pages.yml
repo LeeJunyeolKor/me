@@ -21,7 +21,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.1
-      - run: pnpm --filter @apps/client install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @apps/client build
         env:
           NEXT_PUBLIC_BASE_PATH: /me
