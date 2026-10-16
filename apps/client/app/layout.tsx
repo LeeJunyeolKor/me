@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { siteUrl } from '@/lib/site';
+import { ogImage, siteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: {
@@ -17,6 +17,14 @@ export const metadata: Metadata = {
     description: '프론트엔드, 제품, AI와 함께 일하는 방식에 대한 기록',
     type: 'website',
     locale: 'ko_KR',
+    siteName: 'JY / LOG',
+    images: [ogImage],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'JY / LOG',
+    description: '프론트엔드, 제품, AI와 함께 일하는 방식에 대한 기록',
+    images: [ogImage],
   },
 };
 

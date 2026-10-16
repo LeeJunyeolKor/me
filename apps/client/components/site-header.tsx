@@ -12,7 +12,8 @@ export function SiteHeader() {
         </Link>
         <nav aria-label='주요 메뉴'>
           <Link href='/#writing'>글</Link>
-          <Link href='/about'>소개</Link>
+          <Link href='/notes/'>노트</Link>
+          <Link href='/about/'>소개</Link>
           <a href={basePath + '/feed.xml'}>RSS</a>
         </nav>
       </header>
