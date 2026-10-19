@@ -8,7 +8,7 @@ allowBuilds:
 # Transitive security pins. pnpm 11 reads overrides from this file, not package.json.
 # braces has no published 3.0.4, so GHSA-vfj7-8cjw-p6xm stays until upstream ships a patch.
 overrides:
-  postcss: 8.5.30
+  postcss: 8.5.31
   source-map-js: 1.2.2
   'brace-expansion@<1.1.21': 1.1.21
   'brace-expansion@>=2.0.0 <2.1.7': 2.1.7
