@@ -10,7 +10,7 @@ import { uniqueSlug } from './slug';
 import { tableOfContents } from './toc';
 import { readCodeCaption } from './code-caption';
 import { fenceLanguage } from './code-caption';
-import { ensureTrailingSlash } from './links';
+import { ensureTrailingSlash, withBasePath } from './links';
 
 const post = `---
 title: 글 제목
@@ -165,6 +165,14 @@ test('code captions and fence languages come from the markdown fence', () => {
   assert.equal(fenceLanguage('language-ts extra'), 'ts');
   assert.equal(fenceLanguage('hljs'), '');
   assert.equal(fenceLanguage(undefined), '');
+});
+
+test('root-relative links and images keep the pages base path', () => {
+  assert.equal(withBasePath('/me', '/images/diagram.png'), '/me/images/diagram.png');
+  assert.equal(withBasePath('/me/', '/posts/other/'), '/me/posts/other/');
+  assert.equal(withBasePath('', '/images/diagram.png'), '/images/diagram.png');
+  assert.equal(withBasePath('/me', 'https://example.com/a.png'), 'https://example.com/a.png');
+  assert.equal(withBasePath('/me', ensureTrailingSlash('/posts/other')), '/me/posts/other/');
 });
 
 test('root-relative links keep a trailing slash', () => {

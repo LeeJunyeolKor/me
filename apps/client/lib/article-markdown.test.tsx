@@ -8,6 +8,8 @@ import { tableOfContents } from './toc';
 
 const markdown = `도입 {count} 입니다.
 
+##
+
 ## 코드
 
 - 하나
@@ -22,14 +24,16 @@ export const answer = 42
 \`\`\`
 
 [다른 글](/posts/other)
+
+![그림](/images/diagram.png)
 `;
 
 test('markdown keeps the article markup, highlighting, caption, and trailing slash', () => {
   const toc = tableOfContents(markdown);
-  const html = renderToStaticMarkup(createElement(ArticleMarkdown, { markdown, toc }));
+  const html = renderToStaticMarkup(createElement(ArticleMarkdown, { markdown }));
 
   assert.deepEqual(toc, [{ id: '코드', title: '코드' }]);
-  assert.match(html, /id="코드"/);
+  assert.match(html, /<h2[^>]*id="코드"[^>]*>코드<\/h2>/);
   assert.match(html, /article-content__paragraph/);
   assert.match(html, /\{count\}/);
   assert.match(html, /article-content__list/);
@@ -42,4 +46,5 @@ test('markdown keeps the article markup, highlighting, caption, and trailing sla
   assert.match(html, /hljs-keyword/);
   assert.match(html, /hljs-number/);
   assert.match(html, /href="\/posts\/other\/"/);
+  assert.match(html, /src="\/images\/diagram.png"/);
 });

@@ -4,9 +4,9 @@ import rehypeHighlight from 'rehype-highlight';
 
 import { fenceLanguage } from '@/lib/code-caption';
 import { remarkFenceCaption } from '@/lib/fence-caption';
-import { ensureTrailingSlash } from '@/lib/links';
+import { ensureTrailingSlash, withBasePath } from '@/lib/links';
 import { basePath } from '@/lib/site';
-import type { TocItem } from '@/lib/toc';
+import { remarkHeadingIds } from '@/lib/toc';
 
 const highlightOptions = {
   aliases: {
@@ -24,6 +24,14 @@ type MarkdownProps<Tag extends keyof JSX.IntrinsicElements> = ComponentProps<Tag
 
 function ArticleH1({ children }: MarkdownProps<'h1'>) {
   return <h1 className='article-content__heading'>{children}</h1>;
+}
+
+function ArticleH2({ children, id }: MarkdownProps<'h2'>) {
+  return (
+    <h2 className='article-content__heading' id={id}>
+      {children}
+    </h2>
+  );
 }
 
 function ArticleH3({ children }: MarkdownProps<'h3'>) {
@@ -51,8 +59,14 @@ function ArticleAnchor({ href, children }: MarkdownProps<'a'>) {
     return <a href={href}>{children}</a>;
   }
 
-  const prefix = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-  return <a href={`${prefix}${ensureTrailingSlash(href)}`}>{children}</a>;
+  return <a href={withBasePath(basePath, ensureTrailingSlash(href))}>{children}</a>;
+}
+
+function ArticleImage({ src, alt }: MarkdownProps<'img'>) {
+  const source = typeof src === 'string' ? withBasePath(basePath, src) : undefined;
+  // Markdown images have no intrinsic size, and static export does not optimize them.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img alt={alt ?? ''} src={source} />;
 }
 
 function codeProperties(children: ReactNode): { className?: string; caption?: string } {
@@ -90,32 +104,24 @@ function ArticlePre({ children }: MarkdownProps<'pre'>) {
   );
 }
 
-export function ArticleMarkdown({ markdown, toc }: { markdown: string; toc: readonly TocItem[] }) {
-  let headingIndex = 0;
+export function ArticleMarkdown({ markdown }: { markdown: string }) {
   const components: Components = {
     h1: ArticleH1,
-    h2: ({ children }: MarkdownProps<'h2'>) => {
-      const id = toc[headingIndex]?.id;
-      headingIndex += 1;
-      return (
-        <h2 className='article-content__heading' id={id}>
-          {children}
-        </h2>
-      );
-    },
+    h2: ArticleH2,
     h3: ArticleH3,
     p: ArticleParagraph,
     ul: ArticleList,
     ol: ArticleOrderedList,
     blockquote: ArticleQuote,
     a: ArticleAnchor,
+    img: ArticleImage,
     pre: ArticlePre,
   };
 
   return (
     <Markdown
       components={components}
-      remarkPlugins={[remarkFenceCaption] as Options['remarkPlugins']}
+      remarkPlugins={[remarkHeadingIds, remarkFenceCaption] as Options['remarkPlugins']}
       rehypePlugins={[[rehypeHighlight, highlightOptions]] as Options['rehypePlugins']}>
       {markdown}
     </Markdown>

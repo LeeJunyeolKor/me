@@ -1,3 +1,9 @@
+export function withBasePath(basePath: string, path: string): string {
+  if (!path.startsWith('/') || path.startsWith('//')) return path;
+  const prefix = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+  return `${prefix}${path}`;
+}
+
 export function ensureTrailingSlash(href: string): string {
   if (!href.startsWith('/') || href.startsWith('//')) return href;
 

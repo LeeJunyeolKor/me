@@ -72,7 +72,10 @@ export function loadPosts(directory: string): Post[] {
   }
 
   return posts.sort((a, b) => {
-    if (a.publishedAt === b.publishedAt) return a.slug < b.slug ? -1 : 1;
+    if (a.publishedAt === b.publishedAt) {
+      if (a.slug === b.slug) return 0;
+      return a.slug < b.slug ? -1 : 1;
+    }
     return a.publishedAt < b.publishedAt ? 1 : -1;
   });
 }

@@ -105,7 +105,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </aside>
 
             <div className='article-content'>
-              <ArticleMarkdown markdown={post.body} toc={toc} />
+              <ArticleMarkdown markdown={post.body} />
             </div>
           </div>
 
