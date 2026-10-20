@@ -9,15 +9,6 @@ export function getSearchPosts(): SearchPost[] {
     tags: post.tags,
     date: post.publishedAt,
     readingTime: post.readingTime,
-    text: post.sections
-      .map((section) =>
-        [
-          section.title,
-          ...section.blocks.map((block) =>
-            block.type === 'list' ? block.items.join(' ') : block.type === 'code' ? block.code : block.text
-          ),
-        ].join(' ')
-      )
-      .join(' '),
+    text: post.searchText,
   }));
 }

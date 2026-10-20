@@ -1,71 +1,31 @@
-export type PostParagraph = {
-  type: 'paragraph';
-  text: string;
-};
+import { join } from 'node:path';
 
-export type PostList = {
-  type: 'list';
-  items: readonly string[];
-};
+import { adjacentPosts, loadPosts, type Post } from './post-source';
 
-export type PostQuote = {
-  type: 'quote';
-  text: string;
-  attribution?: string;
-};
-
-export type PostCode = {
-  type: 'code';
-  language: string;
-  code: string;
-  caption?: string;
-};
-
-export type PostBlock = PostParagraph | PostList | PostQuote | PostCode;
-
-export type PostSection = {
-  id: string;
-  title: string;
-  blocks: readonly PostBlock[];
-};
-
-export type Post = {
-  slug: string;
-  title: string;
-  description: string;
-  category: string;
-  tags: readonly string[];
-  publishedAt: string;
-  publishedLabel: string;
-  readingTime: string;
-  featured: boolean;
-  sections: readonly PostSection[];
-};
+export type { Post };
 
 export type AdjacentPosts = {
   previous: Post | null;
   next: Post | null;
 };
 
-const POSTS: readonly Post[] = [];
+function postsDirectory() {
+  return join(process.cwd(), 'content', 'posts');
+}
+
+let cached: readonly Post[] | undefined;
 
 export function getAllPosts(): readonly Post[] {
-  return POSTS;
+  if (process.env.NODE_ENV === 'production' && cached) return cached;
+  const posts = loadPosts(postsDirectory());
+  if (process.env.NODE_ENV === 'production') cached = posts;
+  return posts;
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
-  return POSTS.find((post) => post.slug === slug);
+  return getAllPosts().find((post) => post.slug === slug);
 }
 
 export function getAdjacentPosts(slug: string): AdjacentPosts {
-  const postIndex = POSTS.findIndex((post) => post.slug === slug);
-
-  if (postIndex === -1) {
-    return { previous: null, next: null };
-  }
-
-  return {
-    previous: POSTS[postIndex + 1] ?? null,
-    next: POSTS[postIndex - 1] ?? null,
-  };
+  return adjacentPosts(getAllPosts(), slug);
 }

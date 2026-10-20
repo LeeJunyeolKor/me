@@ -8,12 +8,19 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --tsconfig tsconfig.test.json --test lib/*.test.ts lib/*.test.tsx",
     "format": "prettier . --write"
   },
   "dependencies": {
+    "js-yaml": "5.5.0",
+    "mdast-util-to-string": "4.0.0",
     "next": "15.5.28",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "react-markdown": "10.1.0",
+    "rehype-highlight": "7.0.2",
+    "remark": "15.0.1",
+    "unist-util-visit": "5.1.0"
   },
   "devDependencies": {
     "@junyeol/prettier-config": "^1.0.0",
@@ -26,6 +33,7 @@
     "postcss": "8.5.31",
     "prettier": "^3.9.10",
     "tailwindcss": "3.4.19",
+    "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
 }

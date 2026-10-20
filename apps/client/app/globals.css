@@ -327,13 +327,20 @@ fieldset {
   display: flex;
   gap: 10px;
 }
-.article-content__section {
-  scroll-margin-top: 24px;
-  margin-bottom: 44px;
-}
 .article-content__heading {
   font-size: 25px;
   margin-bottom: 20px;
+  scroll-margin-top: 24px;
+}
+.article-content__heading:not(:first-child) {
+  margin-top: 44px;
+}
+.article-content > :last-child {
+  margin-bottom: 44px;
+}
+.article-content__subheading {
+  font-size: 20px;
+  margin: 28px 0 12px;
 }
 .article-content__paragraph {
   margin-bottom: 20px;
@@ -345,6 +352,9 @@ fieldset {
   padding-left: 24px;
   margin: 20px 0;
 }
+.article-content__list--ordered {
+  list-style: decimal;
+}
 .article-content__list li {
   margin-bottom: 10px;
 }
@@ -353,6 +363,23 @@ fieldset {
   padding: 8px 20px;
   margin: 24px 0;
   color: var(--muted);
+}
+.article-content__quote .article-content__paragraph,
+.article-content__list .article-content__paragraph {
+  margin-bottom: 0;
+  line-height: inherit;
+}
+.article-content :not(pre) > code {
+  background: #efeee8;
+  padding: 0.1em 0.35em;
+}
+.article-content hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 32px 0;
+}
+.article-content img {
+  max-width: 100%;
 }
 .article-code {
   margin: 24px 0;
@@ -375,6 +402,41 @@ fieldset {
 .article-code__caption {
   font-size: 12px;
   color: var(--muted);
+}
+.article-code__pre .hljs-comment,
+.article-code__pre .hljs-quote {
+  color: var(--muted);
+}
+.article-code__pre .hljs-keyword,
+.article-code__pre .hljs-selector-tag,
+.article-code__pre .hljs-tag,
+.article-code__pre .hljs-name,
+.article-code__pre .hljs-section,
+.article-code__pre .hljs-built_in,
+.article-code__pre .hljs-meta .hljs-keyword {
+  color: var(--accent);
+}
+.article-code__pre .hljs-string,
+.article-code__pre .hljs-doctag,
+.article-code__pre .hljs-regexp,
+.article-code__pre .hljs-addition {
+  color: #1d6b4f;
+}
+.article-code__pre .hljs-number,
+.article-code__pre .hljs-literal,
+.article-code__pre .hljs-symbol,
+.article-code__pre .hljs-bullet,
+.article-code__pre .hljs-deletion {
+  color: #9a4d1a;
+}
+.article-code__pre .hljs-title,
+.article-code__pre .hljs-attr,
+.article-code__pre .hljs-attribute,
+.article-code__pre .hljs-variable,
+.article-code__pre .hljs-template-variable,
+.article-code__pre .hljs-type,
+.article-code__pre .hljs-params {
+  color: var(--ink);
 }
 .article-pagination {
   display: grid;

@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { ArticleMarkdown } from '@/components/article-markdown';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { getAdjacentPosts, getAllPosts, getPostBySlug } from '@/lib/posts';
 import { ogImage, siteUrl } from '@/lib/site';
-import { getAdjacentPosts, getAllPosts, getPostBySlug, type PostBlock } from '@/lib/posts';
+import { tableOfContents } from '@/lib/toc';
 
 type PostPageProps = {
   params: Promise<{
@@ -52,43 +54,6 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   };
 }
 
-function ArticleBlock({ block }: { block: PostBlock }) {
-  switch (block.type) {
-    case 'paragraph':
-      return <p className='article-content__paragraph'>{block.text}</p>;
-    case 'list':
-      return (
-        <ul className='article-content__list'>
-          {block.items.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      );
-    case 'quote':
-      return (
-        <blockquote className='article-content__quote'>
-          <p>{block.text}</p>
-          {block.attribution ? <cite>{block.attribution}</cite> : null}
-        </blockquote>
-      );
-    case 'code':
-      return (
-        <figure className='article-code'>
-          <div className='article-code__bar' aria-hidden='true'>
-            <span />
-            <span />
-            <span />
-            <small>{block.language}</small>
-          </div>
-          <pre className='article-code__pre'>
-            <code>{block.code}</code>
-          </pre>
-          {block.caption ? <figcaption className='article-code__caption'>{block.caption}</figcaption> : null}
-        </figure>
-      );
-  }
-}
-
 export default async function PostPage({ params }: PostPageProps) {
   const post = getPostBySlug((await params).slug);
 
@@ -97,6 +62,7 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const { previous, next } = getAdjacentPosts(post.slug);
+  const toc = tableOfContents(post.body);
 
   return (
     <div className='article-page'>
@@ -127,7 +93,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 목차
               </p>
               <ol className='article-toc__list'>
-                {post.sections.map((section, index) => (
+                {toc.map((section, index) => (
                   <li key={section.id}>
                     <a href={`#${section.id}`}>
                       <span aria-hidden='true'>{String(index + 1).padStart(2, '0')}</span>
@@ -139,14 +105,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </aside>
 
             <div className='article-content'>
-              {post.sections.map((section) => (
-                <section className='article-content__section' id={section.id} key={section.id}>
-                  <h2 className='article-content__heading'>{section.title}</h2>
-                  {section.blocks.map((block, index) => (
-                    <ArticleBlock block={block} key={`${section.id}-${block.type}-${index}`} />
-                  ))}
-                </section>
-              ))}
+              <ArticleMarkdown markdown={post.body} toc={toc} />
             </div>
           </div>
 
