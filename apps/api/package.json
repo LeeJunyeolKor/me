@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --import tsx utils/runTests.ts",
-    "test:watch": "glob -c \"node --import tsx --test --watch\" \"**/*.test.ts\"",
+    "test:watch": "node --import tsx --test --watch \"**/*.test.ts\"",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js"
   },
@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "dotenv": "^16.6.1",
-    "glob": "^10.5.0",
     "tsx": "^4.23.15"
   }
 }
