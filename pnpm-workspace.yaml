@@ -16,8 +16,12 @@ overrides:
   'fast-uri@>=3.0.0 <3.1.9': 3.1.9
   'fast-uri@>=4.0.0 <4.2.3': 4.2.3
   'postcss-selector-parser@<7.1.6': 7.1.6
-  # GHSA-g3hv-75wg-m249 is fixed in minimatch >=11.0.1. typescript-estree calls
-  # minimatch.minimatch(path, pattern, { dot: true }), which 11.0.3 still exports.
+  # @typescript-eslint/typescript-estree depends on minimatch ^10.2.2, which
+  # resolves to 10.2.6 (GHSA-g3hv-75wg-m249). This selector replaces that 10.x
+  # copy, so 10.2.6 does not stay in the lockfile. The previous pin, 11.0.3,
+  # is inside GHSA-cf2h-pxjq-68xw (<=11.0.6), GHSA-hqmv-qgp3-jx75 (>=11.0.3),
+  # and GHSA-c859-jr93-m5j4 (<=11.0.7). 11.0.8 fixes all three and still exports
+  # minimatch.minimatch(path, pattern, { dot: true }).
   # Do not override 3.x: eslint 8 and its plugins call require('minimatch') as a function,
-  # and minimatch 11's module export is no longer callable.
-  'minimatch@>=10.0.0 <11.0.1': 11.0.3
+  # and minimatch 11's module export is no longer callable. 3.1.5 is below those ranges.
+  'minimatch@>=10.0.0 <11.0.8': 11.0.8
