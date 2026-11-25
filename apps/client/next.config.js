@@ -1,8 +1,10 @@
+const { readBasePath } = require('./site-config');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  basePath: readBasePath(),
   images: { unoptimized: true },
 };
 

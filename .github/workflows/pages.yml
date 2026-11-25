@@ -26,10 +26,44 @@ jobs:
         with:
           version: 11.1.1
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @apps/client build
+      # Repository variables: Settings → Secrets and variables → Actions → Variables.
+      # SITE_URL, BASE_PATH, GOOGLE_SITE_VERIFICATION, CUSTOM_DOMAIN.
+      # Leave them unset to keep today's site at https://leejunyeolkor.github.io/me.
+      - name: Build static site
         env:
-          NEXT_PUBLIC_BASE_PATH: /me
-          NEXT_PUBLIC_SITE_URL: https://leejunyeolkor.github.io/me
+          SITE_URL: ${{ vars.SITE_URL }}
+          BASE_PATH: ${{ vars.BASE_PATH }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+          GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CUSTOM_DOMAIN}" ]; then
+            if ! printf '%s' "${CUSTOM_DOMAIN}" | grep -Eq '^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$'; then
+              echo "CUSTOM_DOMAIN must be a hostname such as example.com" >&2
+              exit 1
+            fi
+          fi
+          if [ -n "${SITE_URL}" ]; then
+            export NEXT_PUBLIC_SITE_URL="${SITE_URL}"
+          elif [ -n "${CUSTOM_DOMAIN}" ]; then
+            export NEXT_PUBLIC_SITE_URL="https://${CUSTOM_DOMAIN}"
+          else
+            export NEXT_PUBLIC_SITE_URL="https://leejunyeolkor.github.io/me"
+          fi
+          if [ -n "${BASE_PATH}" ]; then
+            export NEXT_PUBLIC_BASE_PATH="${BASE_PATH}"
+          elif [ -n "${CUSTOM_DOMAIN}" ]; then
+            export NEXT_PUBLIC_BASE_PATH=""
+          else
+            export NEXT_PUBLIC_BASE_PATH="/me"
+          fi
+          if [ -n "${GOOGLE_SITE_VERIFICATION}" ]; then
+            export NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION="${GOOGLE_SITE_VERIFICATION}"
+          fi
+          pnpm --filter @apps/client build
+          if [ -n "${CUSTOM_DOMAIN}" ]; then
+            printf '%s\n' "${CUSTOM_DOMAIN}" > apps/client/out/CNAME
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

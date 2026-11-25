@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { adjacentPosts, loadPosts, type Post } from './post-source';
+import { adjacentPosts, loadPosts, publishedPosts, type Post } from './post-source';
 
 export type { Post };
 
@@ -17,7 +17,7 @@ let cached: readonly Post[] | undefined;
 
 export function getAllPosts(): readonly Post[] {
   if (process.env.NODE_ENV === 'production' && cached) return cached;
-  const posts = loadPosts(postsDirectory());
+  const posts = publishedPosts(loadPosts(postsDirectory()));
   if (process.env.NODE_ENV === 'production') cached = posts;
   return posts;
 }

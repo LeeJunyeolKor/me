@@ -45,6 +45,6 @@ test('markdown keeps the article markup, highlighting, caption, and trailing sla
   assert.match(html, /예제/);
   assert.match(html, /hljs-keyword/);
   assert.match(html, /hljs-number/);
-  assert.match(html, /href="\/posts\/other\/"/);
-  assert.match(html, /src="\/images\/diagram.png"/);
+  assert.match(html, /href="\/me\/posts\/other\/"/);
+  assert.match(html, /src="\/me\/images\/diagram.png"/);
 });

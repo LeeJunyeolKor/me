@@ -147,6 +147,19 @@ nav {
   gap: 24px;
   padding: 20px 0;
 }
+.filters--tags {
+  grid-template-columns: 1fr;
+}
+.category-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+.category-nav a[aria-current='page'] {
+  color: var(--accent);
+}
 .topic-label,
 fieldset legend {
   font-size: 12px;
@@ -228,6 +241,63 @@ fieldset {
 }
 .post-tags button[aria-pressed='true'] {
   color: var(--accent);
+}
+.post-meta a,
+.article-hero__category {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article-hero:has(+ .article-restaurant) {
+  margin-bottom: 24px;
+}
+.article-restaurant {
+  max-width: 720px;
+  margin: 0 0 48px auto;
+}
+.restaurant-card {
+  border: 1px solid var(--line);
+  padding: 18px 20px 8px;
+}
+.restaurant-card h2 {
+  font-size: 22px;
+}
+.restaurant-card__score {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.restaurant-card dl {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.restaurant-card dt {
+  color: var(--muted);
+}
+.restaurant-card dd {
+  margin: 0;
+}
+.restaurant-card__hours {
+  white-space: pre-line;
+}
+.restaurant-card a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.restaurant-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.restaurant-menu li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding: 8px 0;
+  font-size: 14px;
 }
 .empty {
   padding: 48px 0;

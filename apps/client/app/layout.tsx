@@ -1,31 +1,34 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { ogImage, siteUrl } from '@/lib/site';
+import { googleSiteVerification, ogImage, siteName, siteUrl } from '@/lib/site';
+
+const description = '개발, 맛집, 일상을 기록하는 이준열의 블로그입니다.';
 
 export const metadata: Metadata = {
   title: {
-    default: 'JY / LOG',
-    template: '%s — JY / LOG',
+    default: siteName,
+    template: `%s — ${siteName}`,
   },
-  description: '이준열의 소개, 노트, 그리고 프론트엔드 개발 기록을 담은 블로그입니다.',
+  description,
   authors: [{ name: 'Junyeol Lee', url: 'https://github.com/LeeJunyeolKor' }],
   creator: 'Junyeol Lee',
   metadataBase: new URL(siteUrl + '/'),
   alternates: { canonical: './' },
   openGraph: {
-    title: 'JY / LOG',
-    description: '프론트엔드, 제품, AI와 함께 일하는 방식에 대한 기록',
+    title: siteName,
+    description,
     type: 'website',
     locale: 'ko_KR',
-    siteName: 'JY / LOG',
+    siteName,
     images: [ogImage],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'JY / LOG',
-    description: '프론트엔드, 제품, AI와 함께 일하는 방식에 대한 기록',
+    title: siteName,
+    description,
     images: [ogImage],
   },
+  ...(googleSiteVerification ? { verification: { google: googleSiteVerification } } : {}),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

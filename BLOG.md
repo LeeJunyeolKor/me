@@ -7,7 +7,7 @@ pnpm install --frozen-lockfile
 pnpm --filter @apps/client run dev
 ```
 
-로컬 주소는 http://localhost:3000 입니다. API 서버나 Notion 키는 필요하지 않습니다.
+로컬 주소는 http://localhost:3000/me 입니다. `NEXT_PUBLIC_BASE_PATH`를 빈 문자열로 두면 http://localhost:3000 입니다. API 서버나 Notion 키는 필요하지 않습니다.
 
 ## 글 관리
 
@@ -18,11 +18,12 @@ pnpm --filter @apps/client run dev
 title: 글 제목
 description: 목록과 검색, RSS, 소셜 카드에 보이는 한 줄 설명
 publishedAt: 2026-10-20
-category: 프론트엔드
+category: dev
 tags:
   - react
   - nextjs
 featured: false
+draft: false
 ---
 
 도입 문단입니다.
@@ -36,11 +37,14 @@ export const answer = 42;
 ```
 ````
 
-- `title`, `description`, `publishedAt`, `category`, `tags`는 필수입니다.
-- `category`는 주제 필터 값입니다.
+- `title`, `description`, `publishedAt`, `tags`는 필수입니다.
+- `category`는 `dev`, `food`, `life` 중 하나입니다. 화면 표기는 개발, 맛집, 일상입니다. 생략하면 `dev`입니다. 다른 값은 빌드가 실패합니다.
+- 목록은 `/`, 카테고리 목록은 `/category/dev/`, `/category/food/`, `/category/life/` 입니다.
 - `publishedAt`은 `YYYY-MM-DD`입니다. 목록은 이 날짜의 최신순이고, 같은 날이면 slug 오름차순입니다.
 - `tags`는 문자열 목록입니다. 비어 있어도 됩니다.
 - `featured`는 선택이며 기본값은 `false`입니다. 화면에는 쓰지 않습니다.
+- `draft: true`인 글은 목록, RSS, 사이트맵, 글 페이지에서 빠집니다. 값이 잘못되면 빌드는 실패합니다.
+- `food` 글에는 `restaurant`를 선택으로 넣을 수 있습니다. 다른 카테고리에 넣으면 빌드가 실패합니다. `name`, `area`, `menu`, `priceRange`, `hours`, `rating`(1–5, 0.5 단위), `visitedAt`은 객체를 쓸 때 필수입니다. `address`, `mapUrl`, `servesCuisine`는 선택입니다. 메뉴 가격은 원 단위 정수입니다. `hours`는 문장이거나 `{ days, opens, closes }` 목록입니다. 시각은 `"11:00"`처럼 적습니다. `days`는 `Mo-Fr`, `월-금`, `토,일`처럼 씁니다.
 - 날짜 표기는 `YYYY.MM.DD`로 만들고, 읽는 시간은 공백을 뺀 500자당 1분으로 계산합니다. 최소 1분입니다.
 - 이전 글은 더 오래된 글, 다음 글은 더 최근 글입니다. 글 링크는 끝에 슬래시를 붙입니다.
 - 본문은 Markdown입니다. 코드 블록 정보 문자열에 `caption="설명"`을 붙이면 캡션이 표시됩니다.
@@ -50,7 +54,7 @@ export const answer = 42;
 
 ## GitHub Pages
 
-이 블로그는 정적 HTML로 빌드되어 별도 서버 없이 배포됩니다. RSS와 사이트맵도 빌드 시 생성됩니다. 공개 사이트는 https://leejunyeolkor.github.io/me/ 입니다. 글이나 사이트를 바꾼 뒤에는 `main`에 머지하고, 배포 워크플로가 성공해야 그 주소에 반영됩니다.
+이 블로그는 정적 HTML로 빌드되어 별도 서버 없이 배포됩니다. RSS, 사이트맵, robots.txt도 빌드 시 생성됩니다. 공개 사이트는 https://leejunyeolkor.github.io/me/ 입니다. 글이나 사이트를 바꾼 뒤에는 `main`에 머지하고, 배포 워크플로가 성공해야 그 주소에 반영됩니다. Search Console과 커스텀 도메인은 `docs/search-console.md`, `docs/custom-domain.md`를 따릅니다.
 
 1. 작업 브랜치에 변경 내용을 커밋하고 푸시한 뒤, PR을 통해 `main`에 머지합니다.
 2. 저장소 Settings → Pages → Source는 GitHub Actions입니다.
@@ -60,8 +64,10 @@ export const answer = 42;
 겹치는 배포는 `pages` 동시성 그룹에서 한 번에 하나만 진행됩니다. 이미 진행 중인 배포는 취소하지 않고 끝내며, 나중에 시작된 배포는 그다음 차례에 실행됩니다.
 
 ```sh
-NEXT_PUBLIC_BASE_PATH=/me NEXT_PUBLIC_SITE_URL=https://leejunyeolkor.github.io/me pnpm --filter @apps/client run build
+pnpm --filter @apps/client run build
 pnpm --filter @apps/client run typecheck
 ```
 
-배포 산출물은 `apps/client/out`입니다. 커스텀 도메인 루트에 배포할 경우 워크플로의 `NEXT_PUBLIC_BASE_PATH`를 빈 문자열로, `NEXT_PUBLIC_SITE_URL`을 해당 HTTPS 도메인으로 변경합니다.
+값을 직접 지정할 때는 `NEXT_PUBLIC_BASE_PATH`(기본 `/me`, 빈 문자열이면 도메인 루트)와 `NEXT_PUBLIC_SITE_URL`(기본 `https://leejunyeolkor.github.io/me`)을 넣습니다. Google 확인 토큰은 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`입니다. 배포 워크플로는 저장소 Variables `BASE_PATH`, `SITE_URL`, `GOOGLE_SITE_VERIFICATION`, `CUSTOM_DOMAIN`을 읽고, 비어 있으면 지금 주소 그대로 빌드합니다.
+
+배포 산출물은 `apps/client/out`입니다. 커스텀 도메인으로 바꿀 때의 DNS, Pages 설정, 예전 `/me` 주소는 `docs/custom-domain.md`에 있습니다.
