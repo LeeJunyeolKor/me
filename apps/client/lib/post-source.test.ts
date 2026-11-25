@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { adjacentPosts, loadPosts, markdownToPlainText, readingTimeLabel } from './post-source';
-import { filterPosts } from './search-filter';
+import { adjacentPosts, loadPosts, markdownToPlainText, publishedPosts, readingTimeLabel } from './post-source';
+import { filterPosts, type SearchPost } from './search-filter';
 import { uniqueSlug } from './slug';
 import { tableOfContents } from './toc';
 import { readCodeCaption } from './code-caption';
@@ -16,7 +17,7 @@ const post = `---
 title: 글 제목
 description: 한 줄 설명
 publishedAt: 2026-10-20
-category: 프론트엔드
+category: dev
 tags:
   - react
   - react
@@ -53,7 +54,9 @@ test('reads one mdx file into a post and ignores other files', () => {
     assert.equal(posts[0]?.description, '한 줄 설명');
     assert.equal(posts[0]?.publishedAt, '2026-10-20');
     assert.equal(posts[0]?.publishedLabel, '2026.10.20');
-    assert.equal(posts[0]?.category, '프론트엔드');
+    assert.equal(posts[0]?.category, 'dev');
+    assert.equal(posts[0]?.draft, false);
+    assert.equal(posts[0]?.restaurant, undefined);
     assert.deepEqual(posts[0]?.tags, ['react', 'nextjs']);
     assert.equal(posts[0]?.featured, false);
     assert.match(posts[0]?.searchText ?? '', /설치/);
@@ -114,21 +117,45 @@ test('rejects posts that cannot be published', () => {
   }
 });
 
-test('requires the authoring fields and keeps an explicit featured flag', () => {
+test('defaults a missing category to dev and rejects an unknown category', () => {
   const directory = tempPosts();
   try {
-    writeFileSync(join(directory, 'topic-only.mdx'), post.replace('category: 프론트엔드', 'topic: 프론트엔드'));
-    assert.throws(() => loadPosts(directory), /topic-only\.mdx[\s\S]*category/);
+    writeFileSync(join(directory, 'legacy.mdx'), post.replace('\ncategory: dev', ''));
+    assert.equal(loadPosts(directory)[0]?.category, 'dev');
 
-    writeFileSync(
-      join(directory, 'featured.mdx'),
-      post.replace('category: 프론트엔드', 'category: 프론트엔드\nfeatured: true').replace('topic: 프론트엔드', '')
-    );
-    rmSync(join(directory, 'topic-only.mdx'));
-    assert.equal(loadPosts(directory)[0]?.featured, true);
+    writeFileSync(join(directory, 'bad-category.mdx'), post.replace('category: dev', 'category: 프론트엔드'));
+    assert.throws(() => loadPosts(directory), /bad-category\.mdx[\s\S]*category/);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('keeps an explicit featured flag and excludes drafts from published posts', () => {
+  const directory = tempPosts();
+  try {
+    writeFileSync(join(directory, 'featured.mdx'), post.replace('category: dev', 'category: dev\nfeatured: true'));
+    writeFileSync(join(directory, 'hidden.mdx'), post.replace('category: dev', 'category: life\ndraft: true'));
+    const posts = loadPosts(directory);
+    assert.equal(posts.find((item) => item.slug === 'featured')?.featured, true);
+    assert.equal(posts.find((item) => item.slug === 'hidden')?.draft, true);
+    assert.deepEqual(
+      publishedPosts(posts).map((item) => item.slug),
+      ['featured']
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('sample fixtures stay out of published content', () => {
+  const directory = join(dirname(fileURLToPath(import.meta.url)), '../fixtures/posts');
+  const posts = loadPosts(directory);
+  assert.deepEqual(posts.map((item) => item.slug).sort(), ['fixture-food', 'fixture-life']);
+  assert.equal(publishedPosts(posts).length, 0);
+  assert.equal(posts.find((item) => item.slug === 'fixture-food')?.restaurant?.name, '샘플국수집');
+  assert.equal(posts.find((item) => item.slug === 'fixture-life')?.category, 'life');
+  assert.equal(existsSync(join(process.cwd(), 'content/posts/fixture-food.mdx')), false);
+  assert.equal(existsSync(join(process.cwd(), 'content/posts/fixture-life.mdx')), false);
 });
 
 test('plain text keeps code identifiers and drops fence markers', () => {
@@ -186,12 +213,12 @@ test('root-relative links keep a trailing slash', () => {
 });
 
 test('search still requires every term, one topic, and any selected tag', () => {
-  const posts = [
+  const posts: SearchPost[] = [
     {
       slug: 'a',
       title: '리액트 훅',
       description: '설명',
-      category: '프론트엔드',
+      category: 'dev',
       date: '2026-10-20',
       readingTime: '1분',
       tags: ['react', 'hook'],
@@ -199,9 +226,10 @@ test('search still requires every term, one topic, and any selected tag', () => 
     },
   ];
 
-  assert.equal(filterPosts(posts, '리액트 snake_case', '프론트엔드', ['hook']).length, 1);
+  assert.equal(filterPosts(posts, '리액트 snake_case', 'dev', ['hook']).length, 1);
   assert.equal(filterPosts(posts, '리액트 없는단어', '', []).length, 0);
   assert.equal(filterPosts(posts, '', '백엔드', []).length, 0);
+  assert.equal(filterPosts(posts, '', '개발', []).length, 1);
   assert.equal(filterPosts(posts, '', '', ['vue']).length, 0);
   assert.equal(filterPosts(posts, '', '', ['react', 'vue']).length, 1);
 });

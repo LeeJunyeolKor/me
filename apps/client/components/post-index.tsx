@@ -1,20 +1,20 @@
 'use client';
 import Link from 'next/link';
 import { useDeferredValue, useEffect, useState } from 'react';
+import { CATEGORIES, categoryIdFromParam, categoryLabel, type Category } from '@/lib/categories';
 import { filterPosts, type SearchPost } from '@/lib/search-filter';
-export function PostIndex({ posts }: { posts: readonly SearchPost[] }) {
+export function PostIndex({ posts, category }: { posts: readonly SearchPost[]; category?: Category }) {
   const [query, setQuery] = useState('');
   const [topic, setTopic] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const deferredQuery = useDeferredValue(query);
-  const topics = Array.from(new Set(posts.map((post) => post.category)));
   const allTags = Array.from(new Set(posts.flatMap((post) => post.tags))).sort();
   useEffect(() => {
     function restore() {
       const params = new URLSearchParams(window.location.search);
       setQuery(params.get('q') || '');
-      setTopic(params.get('topic') || '');
+      setTopic(categoryIdFromParam(params.get('topic') || ''));
       setTags(params.getAll('tag'));
       setReady(true);
     }
@@ -27,12 +27,12 @@ export function PostIndex({ posts }: { posts: readonly SearchPost[] }) {
     const url = new URL(window.location.href);
     url.search = '';
     if (query) url.searchParams.set('q', query);
-    if (topic) url.searchParams.set('topic', topic);
+    if (!category && topic) url.searchParams.set('topic', topic);
     tags.forEach((tag) => url.searchParams.append('tag', tag));
     window.history.replaceState(window.history.state, '', url);
-  }, [query, topic, tags, ready]);
-  const filtered = filterPosts(posts, deferredQuery, topic, tags);
-  const active = Boolean(query || topic || tags.length);
+  }, [query, topic, tags, ready, category]);
+  const filtered = filterPosts(posts, deferredQuery, category ?? topic, tags);
+  const active = Boolean(query || (!category && topic) || tags.length);
   function reset() {
     setQuery('');
     setTopic('');
@@ -59,17 +59,20 @@ export function PostIndex({ posts }: { posts: readonly SearchPost[] }) {
           </button>
         )}
       </div>
-      <div className='filters'>
-        <label className='topic-label'>
-          주제
-          <select value={topic} onChange={(event) => setTopic(event.target.value)}>
-            <option value=''>모든 주제</option>
-            {topics.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-            {topic && !topics.includes(topic) && <option>{topic}</option>}
-          </select>
-        </label>
+      <div className={category ? 'filters filters--tags' : 'filters'}>
+        {category ? null : (
+          <label className='topic-label'>
+            카테고리
+            <select value={topic} onChange={(event) => setTopic(event.target.value)}>
+              <option value=''>모든 카테고리</option>
+              {CATEGORIES.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <fieldset>
           <legend>태그 · 하나라도 일치</legend>
           <div className='tag-options'>
@@ -93,7 +96,7 @@ export function PostIndex({ posts }: { posts: readonly SearchPost[] }) {
           <article className='post-row' key={post.slug}>
             <div className='post-meta'>
               <time dateTime={post.date}>{post.date.replaceAll('-', '.')}</time>
-              <span>{post.category}</span>
+              <Link href={'/category/' + post.category + '/'}>{categoryLabel(post.category)}</Link>
               <span>{post.readingTime} 읽기</span>
             </div>
             <div>
@@ -112,15 +115,21 @@ export function PostIndex({ posts }: { posts: readonly SearchPost[] }) {
           </article>
         ))}
       </div>
-      {!filtered.length && (
-        <div className='empty'>
-          <h3>검색 결과가 없습니다.</h3>
-          <p>검색어를 줄이거나 주제와 태그를 해제해 보세요.</p>
-          <button onClick={reset} className='text-button'>
-            모든 조건 지우기
-          </button>
-        </div>
-      )}
+      {!filtered.length &&
+        (active ? (
+          <div className='empty'>
+            <h3>검색 결과가 없습니다.</h3>
+            <p>검색어를 줄이거나 카테고리와 태그를 해제해 보세요.</p>
+            <button onClick={reset} className='text-button'>
+              모든 조건 지우기
+            </button>
+          </div>
+        ) : (
+          <div className='empty'>
+            <h3>아직 글이 없습니다.</h3>
+            <p>이 목록에 발행된 글이 없습니다.</p>
+          </div>
+        ))}
     </div>
   );
 }

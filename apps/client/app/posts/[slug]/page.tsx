@@ -3,11 +3,15 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ArticleMarkdown } from '@/components/article-markdown';
+import { PostJsonLd } from '@/components/post-json-ld';
+import { RestaurantCard } from '@/components/restaurant-card';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { categoryLabel } from '@/lib/categories';
 import { getAdjacentPosts, getAllPosts, getPostBySlug } from '@/lib/posts';
 import { ogImage, siteUrl } from '@/lib/site';
 import { tableOfContents } from '@/lib/toc';
+import { absoluteUrl } from '@/lib/urls';
 
 type PostPageProps = {
   params: Promise<{
@@ -30,18 +34,20 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
+  const url = absoluteUrl(siteUrl, `/posts/${post.slug}/`);
+
   return {
     title: post.title,
     description: post.description,
     alternates: {
-      canonical: `${siteUrl}/posts/${post.slug}/`,
+      canonical: url,
     },
     openGraph: {
       type: 'article',
       title: post.title,
       description: post.description,
       publishedTime: post.publishedAt,
-      url: `${siteUrl}/posts/${post.slug}/`,
+      url,
       tags: [...post.tags],
       images: [ogImage],
     },
@@ -70,13 +76,16 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <main className='article-main' id='main-content'>
         <article className='article-shell'>
+          <PostJsonLd post={post} />
           <header className='article-hero'>
             <Link className='article-hero__back' href='/#writing'>
               <span aria-hidden='true'>←</span> 글 목록
             </Link>
 
             <div className='article-hero__meta'>
-              <span className='article-hero__category'>{post.category}</span>
+              <Link className='article-hero__category' href={`/category/${post.category}/`}>
+                {categoryLabel(post.category)}
+              </Link>
               <span aria-hidden='true'>/</span>
               <time dateTime={post.publishedAt}>{post.publishedLabel}</time>
               <span aria-hidden='true'>/</span>
@@ -86,6 +95,12 @@ export default async function PostPage({ params }: PostPageProps) {
             <h1 className='article-hero__title'>{post.title}</h1>
             <p className='article-hero__description'>{post.description}</p>
           </header>
+
+          {post.restaurant ? (
+            <div className='article-restaurant'>
+              <RestaurantCard restaurant={post.restaurant} />
+            </div>
+          ) : null}
 
           <div className='article-body'>
             <aside className='article-toc' aria-labelledby='article-toc-title'>

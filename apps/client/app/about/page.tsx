@@ -13,6 +13,7 @@ export default function AboutPage() {
           <h1>이준열</h1>
           <p>프론트엔드 엔지니어입니다.</p>
           <p>개발하며 배운 내용과 문제를 해결한 과정을 정리합니다. 프론트엔드, 브라우저, AI 개발에 관심이 있습니다.</p>
+          <p>개발 기록과 함께 맛집, 일상도 적습니다.</p>
           <a href='https://github.com/LeeJunyeolKor'>GitHub</a>
         </div>
       </main>

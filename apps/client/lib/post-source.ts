@@ -5,18 +5,24 @@ import { JSON_SCHEMA, load } from 'js-yaml';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
+import { readCategory, type Category } from './categories';
+import { isRealDate } from './date';
+import { readRestaurant, type Restaurant } from './restaurant';
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export type Post = {
   slug: string;
   title: string;
   description: string;
-  category: string;
+  category: Category;
   tags: readonly string[];
   publishedAt: string;
   publishedLabel: string;
   readingTime: string;
   featured: boolean;
+  draft: boolean;
+  restaurant?: Restaurant;
   body: string;
   searchText: string;
 };
@@ -50,6 +56,10 @@ export function adjacentPosts<T extends { slug: string }>(
     previous: posts[postIndex + 1] ?? null,
     next: posts[postIndex - 1] ?? null,
   };
+}
+
+export function publishedPosts<T extends { draft: boolean }>(posts: readonly T[]): T[] {
+  return posts.filter((post) => !post.draft);
 }
 
 export function loadPosts(directory: string): Post[] {
@@ -88,18 +98,22 @@ function parsePost(filename: string, source: string): Post {
 
   const { data, body } = splitFrontmatter(source, filename);
   const publishedAt = readDate(data.publishedAt, filename);
-  const searchText = markdownToPlainText(body);
+  const category = readCategory(data.category, filename);
+  const restaurant = readRestaurant(data.restaurant, filename, category);
+  const searchText = [markdownToPlainText(body), restaurantSearchText(restaurant)].filter(Boolean).join(' ');
 
   return {
     slug,
     title: requiredString(data, 'title', filename),
     description: requiredString(data, 'description', filename),
-    category: requiredString(data, 'category', filename),
+    category,
     tags: readTags(data.tags, filename),
     publishedAt,
     publishedLabel: publishedAt.replaceAll('-', '.'),
     readingTime: readingTimeLabel(searchText),
     featured: readFeatured(data.featured, filename),
+    draft: readDraft(data.draft, filename),
+    restaurant,
     body,
     searchText,
   };
@@ -154,16 +168,6 @@ function readDate(value: unknown, filename: string): string {
   return value;
 }
 
-function isRealDate(value: string): boolean {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}
-
 function readTags(value: unknown, filename: string): string[] {
   if (!Array.isArray(value)) {
     throw new Error(`Invalid post "${filename}": "tags" must be a list of strings.`);
@@ -186,4 +190,26 @@ function readFeatured(value: unknown, filename: string): boolean {
     throw new Error(`Invalid post "${filename}": "featured" must be true or false.`);
   }
   return value;
+}
+
+function readDraft(value: unknown, filename: string): boolean {
+  if (value === undefined) return false;
+  if (typeof value !== 'boolean') {
+    throw new Error(`Invalid post "${filename}": "draft" must be true or false.`);
+  }
+  return value;
+}
+
+function restaurantSearchText(restaurant: Restaurant | undefined): string {
+  if (!restaurant) return '';
+  return [
+    restaurant.name,
+    restaurant.area,
+    restaurant.address,
+    restaurant.servesCuisine,
+    restaurant.priceRange,
+    ...restaurant.menu.map((item) => item.name),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(' ');
 }
